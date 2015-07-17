@@ -57,14 +57,36 @@ class MainViewController < UIViewController
     todo_list_manager.todo_items.delete_at(index)
     todo_list_manager.save
     
-    # to insert, delete or move table rows you need to enclose in begin and end Upates
-    table_view.beginUpdates
-    indexPathForRow = NSIndexPath.indexPathForRow(index, inSection: 0)
-    table_view.deleteRowsAtIndexPaths([indexPathForRow], withRowAnimation: UITableViewRowAnimationLeft)
-    table_view.endUpdates 
+    visible_cells = table_view.visibleCells
+    last_view = visible_cells[visible_cells.count - 1]
+    start_animating = false
+    
+    # slides the deleted cell to the left first and then shifts up the table
+    # stock animation for deleteRowsAtIndexPaths merges the two animations and doesn't look as good
+    visible_cells.each_with_index do |cell, cell_index|
+      if cell_index == index
+        UIView.animateWithDuration(0.2, 
+                delay: 0.0, 
+                options: UIViewAnimationOptionCurveEaseOut,
+                animations: proc { cell.frame = CGRectOffset(cell.frame, -cell.frame.size.width, 0) },
+                completion: proc { |cell| cell.hidden = true if cell == index }
+        )
+      elsif start_animating
+        UIView.animateWithDuration(0.2, 
+                delay: 0.25, 
+                options: UIViewAnimationOptionCurveEaseIn,
+                animations: proc { cell.frame = CGRectOffset(cell.frame, 0, -cell.frame.size.height) },
+                completion: proc { |cell| table_view.reloadData if cell == last_view }
+        )
+      end
+      
+      if cell.todo_item == todo_item 
+        start_animating = true
+      end
+    end
     
     # reload the cells after the delete animation has finished to keep the proper color gradient
-    self.performSelector("reload_table_view_after_delete", withObject: nil, afterDelay: 0.25)  
+    self.performSelector("reload_table_view_after_delete", withObject: nil, afterDelay: 0.65)  
   end
   
   def todo_item_saved

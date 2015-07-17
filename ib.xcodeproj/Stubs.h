@@ -59,6 +59,11 @@
 
 @end
 
+@interface OpenStruct: BasicObject
+-(IBAction) initialize:(id) hash;
+
+@end
+
 @interface StrikeThroughText: UITextField
 -(IBAction) initWithFrame:(id) frame;
 -(IBAction) layoutSubviews;
