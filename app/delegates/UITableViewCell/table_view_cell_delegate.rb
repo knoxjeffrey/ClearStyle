@@ -1,13 +1,13 @@
 #############################
 # TableViewCellDelegate methods
-# contains toDoItemDeleted, cellDidBeginEditing, cellDidEndEditing
+# contains cellDidBeginEditing, cellDidEndEditing
 #############################
 
 module TableViewCellDelegate  
   
   # Using a transform below has the big advantage that it is easy to move a cell back to its original location: you simply “zero” the translation (i.e., apply the identity), instead of having to store the original frame for each and every cell that is moved
   
-  # indicates that the edit process has begun for the given cell
+  # indicates that the edit process has begun for the given cell and animates the cell to scroll to the top of screen. Other cells are faded.
   def cellDidBeginEditing(editing_cell) 
     editing_offset = table_view.contentOffset.y - editing_cell.frame.origin.y
     visible_cells = table_view.visibleCells
@@ -23,7 +23,7 @@ module TableViewCellDelegate
     
   end
   
-  # indicates that the edit process has committed for the given cell
+  # indicates that the edit process has committed for the given cell and cell moved back to its location
   def cellDidEndEditing(editing_cell)
     visible_cells = table_view.visibleCells
     

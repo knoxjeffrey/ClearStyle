@@ -58,49 +58,78 @@ class MainViewController < UIViewController
     todo_list_manager.save
     
     visible_cells = table_view.visibleCells
+    #cell_being_deleted = visible_cells[index]
     last_view = visible_cells[visible_cells.count - 1]
     start_animating = false
-    
+
     # slides the deleted cell to the left first and then shifts up the table
     # stock animation for deleteRowsAtIndexPaths merges the two animations and doesn't look as good
     visible_cells.each_with_index do |cell, cell_index|
       if cell_index == index
+        #toggle_cross_symobol_cell(cell_being_deleted)
+
         UIView.animateWithDuration(0.2, 
                 delay: 0.0, 
                 options: UIViewAnimationOptionCurveEaseOut,
                 animations: proc { cell.frame = CGRectOffset(cell.frame, -cell.frame.size.width, 0) },
-                completion: proc { |cell| cell.hidden = true if cell == index }
+                completion: proc { |cell| break if cell_index == index }
         )
       elsif start_animating
         UIView.animateWithDuration(0.2, 
-                delay: 0.25, 
+                delay: 0.2, 
                 options: UIViewAnimationOptionCurveEaseIn,
                 animations: proc { cell.frame = CGRectOffset(cell.frame, 0, -cell.frame.size.height) },
-                completion: proc { |cell| table_view.reloadData if cell == last_view }
+                completion: Proc.new do |cell| 
+                              if cell_index == visible_cells.count - 1
+                                table_view.reloadData
+                                #toggle_cross_symobol_cell(cell_being_deleted)
+                              end
+                            end
         )
       end
       
-      if cell.todo_item == todo_item 
-        start_animating = true
-      end
+      start_animating = true if cell.todo_item == todo_item 
+
     end
     
+    # although I use my own animation to handle the cell being deleted to the left I had to include this to properly manage deleting info from the table and preventing flicker
+    table_view.beginUpdates
+    indexPathForRow = NSIndexPath.indexPathForRow(index, inSection: 0)
+    table_view.deleteRowsAtIndexPaths([indexPathForRow], withRowAnimation: UITableViewRowAnimationLeft)
+    table_view.endUpdates
+    
+    
     # reload the cells after the delete animation has finished to keep the proper color gradient
-    self.performSelector("reload_table_view_after_delete", withObject: nil, afterDelay: 0.65)  
+    #self.performSelector("reload_table_view_after_delete", withObject: nil, afterDelay: 0.55)  
   end
+  
+  #def toggle_cross_symobol_cell(view)
+  #  cell_subviews = view.subviews
+  #  
+  #  cell_subviews.each do |view|
+  #    if view.isKindOfClass(UILabel) && view.text != "\u2713"
+  #      view.text == "\u2717" ? view.text = "" : view.text = "\u2717"
+  #    end
+  #  end
+  #end
   
   def todo_item_saved
     todo_list_manager.save
   end
   
-  def reload_table_view_after_delete
-    table_view.reloadData
-  end
+  #def reload_table_view_after_delete
+  #  table_view.reloadData
+  #end
   
   def todo_item_added
     todo_item = todo_list_manager.create_todo_with_content("")
     todo_list_manager.todo_items.unshift(todo_item)
-    table_view.reloadData # empty cell will appear at top of table
+    #table_view.reloadData # empty cell will appear at top of table
+    
+    table_view.beginUpdates
+    indexPathForRow = NSIndexPath.indexPathForRow(0, inSection: 0)
+    table_view.insertRowsAtIndexPaths([indexPathForRow], withRowAnimation: UITableViewRowAnimationTop)
+    table_view.endUpdates
     
     # enter edit mode
     visible_cells = table_view.visibleCells
