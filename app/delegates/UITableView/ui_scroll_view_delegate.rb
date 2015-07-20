@@ -13,16 +13,13 @@ module UIScrollViewDelegate
     @pulldown ||= PullDown.new(table_view_reference.dequeueReusableCellWithIdentifier(TODO_CELL_ID) , false)
   end
   
-  # this behavior starts when a user pulls down
-  def scrollViewWillBeginDragging(scroll_view)
+  def scrollViewDidScroll(scroll_view)
     pulldown.placeholder_cell.backgroundColor = UIColor.redColor
     pulldown.pull_down_in_progress = scroll_view.contentOffset.y <= 0.0
     
     # add the placeholder
     table_view_reference.insertSubview(pulldown.placeholder_cell, atIndex: 0)  if pulldown.pull_down_in_progress 
-  end
-  
-  def scrollViewDidScroll(scroll_view)
+    
     scroll_view_content_offset_Y = scroll_view.contentOffset.y
 
     if pulldown.pull_down_in_progress && scroll_view.contentOffset.y <= 0.0 
@@ -34,17 +31,15 @@ module UIScrollViewDelegate
       pulldown.placeholder_cell.alpha = [1.0, -scroll_view_content_offset_Y / table_view_reference.rowHeight].min
     else 
       pulldown.pull_down_in_progress = false
+      pulldown.placeholder_cell.removeFromSuperview
     end
   end
   
   def scrollViewDidEndDragging(scroll_view, willDecelerate: decelerate)
     # check whether the user pulled down far enough
     if pulldown.pull_down_in_progress && -scroll_view.contentOffset.y > table_view_reference.rowHeight
-      todo_item_added
+      self.performSelector("todo_item_added", withObject: nil, afterDelay: 0.3)
     end
-    
-    pulldown.pull_down_in_progress = false
-    pulldown.placeholder_cell.removeFromSuperview
   end
   
   def table_view_reference

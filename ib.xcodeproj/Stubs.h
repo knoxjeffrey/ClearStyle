@@ -41,6 +41,7 @@
 
 -(IBAction) viewDidLoad;
 -(IBAction) todo_item_deleted:(id) todo_item;
+-(IBAction) toggle_cross_symobol_cell:(id) view;
 -(IBAction) todo_item_saved;
 -(IBAction) reload_table_view_after_delete;
 -(IBAction) todo_item_added;
@@ -56,6 +57,11 @@
 -(IBAction) storage_file;
 -(IBAction) load;
 -(IBAction) save;
+
+@end
+
+@interface OpenStruct: BasicObject
+-(IBAction) initialize:(id) hash;
 
 @end
 

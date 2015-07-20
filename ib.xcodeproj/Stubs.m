@@ -18,6 +18,9 @@
 @implementation TodoListManager
 @end
 
+@implementation OpenStruct
+@end
+
 @implementation StrikeThroughText
 @end
 
